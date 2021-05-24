@@ -14,9 +14,12 @@ RUN apt-get update && apt-get -y upgrade && \
     apt-get install -y azure-cli && \
     rm -rf /var/lib/apt/lists/*
 
+RUN curl -sSL "https://github.com/gotestyourself/gotestsum/releases/download/v0.3.1/gotestsum_0.3.1_linux_amd64.tar.gz" | tar -xz -C /usr/local/bin gotestsum
+
 COPY --from=lachlanevenson/k8s-kubectl:v1.20.5 /usr/local/bin/kubectl /usr/local/bin/kubectl
 
 COPY ./osm_arc_conformance.sh /
+COPY ./setup_failure_handler.py /
 
 RUN ["chmod", "+x", "/osm_arc_conformance.sh"]
 ENTRYPOINT ["/osm_arc_conformance.sh"]

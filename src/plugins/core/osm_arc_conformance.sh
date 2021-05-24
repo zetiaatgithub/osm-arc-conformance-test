@@ -38,11 +38,51 @@ saveResults() {
 # Ensure that we tell the Sonobuoy worker we are done regardless of results.
 trap saveResults EXIT
 
+if [[ -z "${TENANT_ID}" ]]; then
+  echo "ERROR: parameter TENANT_ID is required." > ${results_dir}/error
+  python3 setup_failure_handler.py
+fi
+
+if [[ -z "${SUBSCRIPTION_ID}" ]]; then
+  echo "ERROR: parameter SUBSCRIPTION_ID is required." > ${results_dir}/error
+  python3 setup_failure_handler.py
+fi
+
+if [[ -z "${RESOURCE_GROUP}" ]]; then
+  echo "ERROR: parameter RESOURCE_GROUP is required." > ${results_dir}/error
+  python3 setup_failure_handler.py
+fi
+
+if [[ -z "${CLUSTER_NAME}" ]]; then
+  echo "ERROR: parameter CLUSTER_NAME is required." > ${results_dir}/error
+  python3 setup_failure_handler.py
+fi
+
+if [[ -z "${CLIENT_ID}" ]]; then
+  echo "ERROR: parameter CLIENT_ID is required." > ${results_dir}/error
+  python3 setup_failure_handler.py
+fi
+
+if [[ -z "${CLIENT_SECRET}" ]]; then
+  echo "ERROR: parameter CLIENT_SECRET is required." > ${results_dir}/error
+  python3 setup_failure_handler.py
+fi
+
+if [[ -z "${OSM_ARC_RELEASE_TRAIN}" ]]; then
+  echo "ERROR: parameter OSM_ARC_RELEASE_TRAIN is required." > ${results_dir}/error
+  python3 setup_failure_handler.py
+fi
+
+if [[ -z "${OSM_ARC_RELEASE_NAMESPACE}" ]]; then
+  echo "ERROR: parameter OSM_ARC_RELEASE_NAMESPACE is required." > ${results_dir}/error
+  python3 setup_failure_handler.py
+fi
+
 # Login with service principal
 az login --service-principal \
   -u ${CLIENT_ID} \
   -p ${CLIENT_SECRET} \
-  --tenant ${TENANT_ID}
+  --tenant ${TENANT_ID} 2> ${results_dir}/error || python3 setup_failure_handler.py
 
 # Wait for resources in ARC ns
 waitSuccessArc="$(waitForResources deployment azure-arc)"
@@ -51,7 +91,7 @@ if [ "${waitSuccessArc}" == false ]; then
     exit 1
 fi
 
-az extension add --name k8s-extension
+az extension add --name k8s-extension 2> ${results_dir}/error || python3 setup_failure_handler.py
 
 az k8s-extension create \
     --cluster-name $CLUSTER_NAME \
@@ -60,10 +100,10 @@ az k8s-extension create \
     --extension-type Microsoft.openservicemesh \
     --subscription $SUBSCRIPTION_ID \
     --scope cluster \
-    --release-train staging \
+    --release-train $OSM_ARC_RELEASE_TRAIN \
     --name osm \
     --release-namespace $OSM_ARC_RELEASE_NAMESPACE \
-    --version $OSM_ARC_VERSION
+    --version $OSM_ARC_VERSION 2> ${results_dir}/error || python3 setup_failure_handler.py
 
 # Wait for resources in osm-arc release ns
 waitSuccessArc="$(waitForResources deployment $OSM_ARC_RELEASE_NAMESPACE)"
@@ -80,4 +120,4 @@ cd osm
 export CTR_REGISTRY="openservicemesh"
 export CTR_TAG=v${OSM_ARC_VERSION}
 
-go test ./tests/e2e -test.v -ginkgo.v -ginkgo.progress -test.timeout 60m -installType=NoInstall -OsmNamespace=$OSM_ARC_RELEASE_NAMESPACE > /tmp/results/results.xml
+gotestsum --junitfile /tmp/results/results.xml ./tests/e2e -test.v -ginkgo.v -ginkgo.progress -test.timeout 60m -installType=NoInstall -OsmNamespace=$OSM_ARC_RELEASE_NAMESPACE
