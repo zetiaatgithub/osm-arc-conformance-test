@@ -45,8 +45,8 @@ az login --service-principal \
   --tenant ${TENANT_ID}
 
 # Wait for resources in ARC ns
-waitSuccess="$(waitForResources deployment azure-arc)"
-if [ "${waitSuccess}" == false ]; then
+waitSuccessArc="$(waitForResources deployment azure-arc)"
+if [ "${waitSuccessArc}" == false ]; then
     echo "deployment is not avilable in namespace - azure-arc"
     exit 1
 fi
@@ -65,7 +65,12 @@ az k8s-extension create \
     --release-namespace $OSM_ARC_RELEASE_NAMESPACE \
     --version $OSM_ARC_VERSION
 
-kubectl wait --for=condition=available deployment --all --namespace $OSM_ARC_RELEASE_NAMESPACE
+# Wait for resources in osm-arc release ns
+waitSuccessArc="$(waitForResources deployment $OSM_ARC_RELEASE_NAMESPACE)"
+if [ "${waitSuccessArc}" == false ]; then
+    echo "deployment is not avilable in namespace - $OSM_ARC_RELEASE_NAMESPACE"
+    exit 1
+fi
 
 export UPSTREAM_REPO="https://github.com/openservicemesh/osm"
 
