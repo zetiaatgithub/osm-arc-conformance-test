@@ -1,4 +1,5 @@
 #!/bin/bash
+
 set -x
 set -e
 
@@ -120,4 +121,6 @@ cd osm
 export CTR_REGISTRY="openservicemesh"
 export CTR_TAG=v${OSM_ARC_VERSION}
 
-gotestsum --junitfile /tmp/results/results.xml ./tests/e2e -test.v -ginkgo.v -ginkgo.progress -test.timeout 60m -installType=NoInstall -OsmNamespace=$OSM_ARC_RELEASE_NAMESPACE
+make build-osm
+
+gotestsum --junitfile ./tmp/results/results.xml ./tests/e2e -test.v -ginkgo.v -ginkgo.progress -test.timeout 60m -installType=NoInstall -OsmNamespace=$OSM_ARC_RELEASE_NAMESPACE
