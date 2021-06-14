@@ -16,7 +16,7 @@ RUN apt-get update && apt-get -y upgrade && \
 
 RUN python3 -m pip install junit_xml
 
-RUN curl -sSL "https://github.com/gotestyourself/gotestsum/releases/download/v0.3.1/gotestsum_0.3.1_linux_amd64.tar.gz" | tar -xz -C /usr/local/bin gotestsum
+RUN go get -u github.com/jstemmer/go-junit-report
 
 COPY --from=lachlanevenson/k8s-kubectl:v1.20.5 /usr/local/bin/kubectl /usr/local/bin/kubectl
 

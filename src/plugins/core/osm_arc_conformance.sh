@@ -27,7 +27,7 @@ function waitForResources {
 # saveResults prepares the results for handoff to the Sonobuoy worker.
 # See: https://github.com/vmware-tanzu/sonobuoy/blob/master/docs/plugins.md
 saveResults() {
-    cd ${results_dir}
+  cd ${results_dir}
 
     # Sonobuoy worker expects a tar file.
 	tar czf results.tar.gz *
@@ -115,12 +115,14 @@ fi
 
 export UPSTREAM_REPO="https://github.com/openservicemesh/osm"
 
-git clone -b v${OSM_ARC_VERSION} $UPSTREAM_REPO
+git clone -b v$OSM_ARC_VERSION $UPSTREAM_REPO
 cd osm
 
 export CTR_REGISTRY="openservicemesh"
-export CTR_TAG=v${OSM_ARC_VERSION}
+export CTR_TAG=v$OSM_ARC_VERSION
 
 make build-osm
 
-gotestsum --junitfile ./tmp/results/results.xml ./tests/e2e -test.v -ginkgo.v -ginkgo.progress -test.timeout 60m -installType=NoInstall -OsmNamespace=$OSM_ARC_RELEASE_NAMESPACE
+go test ./tests/e2e -test.v -ginkgo.v -test.timeout 60m -installType=NoInstall -OsmNamespace=$OSM_ARC_RELEASE_NAMESPACE -v 2>&1 | go-junit-report > ../../tmp/results/results.xml
+
+sleep 120

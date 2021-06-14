@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+        <testsuite tests="1" failures="0" time="34.200s" name="github.com/openservicemesh/osm/tests/e2e">
+                <properties>
+                        <property name="go.version" value="go1.10.3"></property>
+                </properties>
+                <testcase classname="e2e" name="TestSuite" time="34.200s"></testcase>
+        </testsuite>
+</testsuites>
